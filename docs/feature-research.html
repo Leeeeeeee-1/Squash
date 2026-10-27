@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>压缩软件功能调研 · Squash</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f7f7f9; --line:#e5e5ea; --ink:#1d1d1f; --ink2:#6e6e73;
+    --blue:#0071e3; --red:#d70015; --orange:#c93400; --green:#1a7f37; --gray:#8e8e93;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.65 -apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC","Helvetica Neue",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1060px;margin:0 auto;padding:56px 32px 80px}
+  header{border-left:4px solid var(--blue);padding-left:20px;margin-bottom:44px}
+  header .kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);margin-bottom:10px}
+  h1{font-size:32px;line-height:1.25;margin:0 0 12px;font-weight:650;letter-spacing:-.01em}
+  header .sub{color:var(--ink2);font-size:14px}
+  h2{font-size:20px;margin:52px 0 16px;font-weight:620;letter-spacing:-.01em;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  h3{font-size:15px;margin:26px 0 10px;font-weight:600}
+  p{margin:10px 0}
+  .lead{font-size:15.5px;color:#3a3a3c}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--panel);font-weight:600;font-size:12.5px;color:#3a3a3c;white-space:nowrap}
+  tbody tr:hover{background:#fafafc}
+  td.c,th.c{text-align:center}
+  .yes{color:var(--green);font-weight:600}
+  .no{color:var(--gray)}
+  .part{color:var(--orange);font-weight:600}
+  .tag{display:inline-block;padding:1px 7px;border-radius:5px;font-size:11px;font-weight:600;line-height:1.6;white-space:nowrap}
+  .p0{background:#ffe5e5;color:var(--red)}
+  .p1{background:#fff0e0;color:var(--orange)}
+  .p2{background:#f0f0f2;color:#48484a}
+  .card{background:var(--panel);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .card.warn{background:#fff8f5;border:1px solid #ffe0d1}
+  .card code{background:#ffffff;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:12.5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:16px 0}
+  .grid .box{border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .grid .box h4{margin:0 0 6px;font-size:13.5px;font-weight:600}
+  .grid .box p{margin:0;font-size:13px;color:var(--ink2)}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .kv{display:flex;gap:10px;font-size:13.5px;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .kv b{min-width:130px;font-weight:600;color:#3a3a3c}
+  footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink2)}
+  .pill{display:inline-block;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:2px 10px;font-size:12px;margin:0 6px 6px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">功能调研 · 2026-10-26</div>
+  <h1>压缩软件应该具备什么功能</h1>
+  <div class="sub">基于 Lee 的四条需求（解压 / 加密码 / 操作简单 / 兼容全部协议）＋ 场景推导，附引擎实测与竞品对照</div>
+</header>
+
+<h2>0 · 结论先行</h2>
+<p class="lead">你的四条需求只覆盖了「合格线」，真正决定一个压缩工具好不好用的，是它有没有解决<b>发送方与接收方之间的落差</b>——格式谁都能解、密码谁都能加，但「发出去对方打不开」「解出来文件名是乱码」「体积太大没法发」这三件事，市面上的工具大多不管。</p>
+
+<div class="grid">
+  <div class="box">
+    <h4>能形成差异的只有三步</h4>
+    <p>① 中文文件名乱码修复（实测引擎不解决）<br>② 面向接收方的兼容性预警（该用什么格式发给谁）<br>③ 镜像与固件直接提取（7-Zip 26 已内建，无人做成 UI）</p>
+  </div>
+  <div class="box">
+    <h4>不要做的事</h4>
+    <p>压缩包内编辑器、密码破解、云盘上传、RAR 创建、格式全家桶 UI。这些是功能蔓延，不是需求。</p>
+  </div>
+</div>
+
+<h2>1 · 需求翻译：四条需求拆成 23 个可执行功能点</h2>
+<table>
+  <thead><tr><th>你的原话</th><th>真实含义</th><th>拆出来的功能点</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b>解压缩</b></td>
+      <td>别人发来的东西我得能打开，不管他用什么工具打的</td>
+      <td>格式自动识别 · 嵌套压缩包递归解 · 加密包提示输密码 · 分卷自动合并 · 解压路径防穿越（zip-slip）· 解压后打开 Finder</td>
+    </tr>
+    <tr>
+      <td><b>添加密码</b></td>
+      <td>内容敏感，发出去不能被人随手打开</td>
+      <td>AES-256 真加密 · 加密文件名 · 密码强度提示 · 强度不可降级（禁止 ZipCrypto）· 密码可见性切换 · 密码错误明确报错</td>
+    </tr>
+    <tr>
+      <td><b>操作简单</b></td>
+      <td>不想学，拖进去就该出结果</td>
+      <td>拖入自动判向 · 默认参数就是最优参数 · 一步完成 · 进度可见 · 可取消 · 完成后直接定位结果</td>
+    </tr>
+    <tr>
+      <td><b>兼容全部协议</b></td>
+      <td>我不管对方用 Windows / Mac / 手机，发过去都能打开</td>
+      <td>50+ 格式解压 · 7z/ZIP/TAR 系列创建 · 排除 __MACOSX · 中文文件名编码 · 发送前兼容性提示 · 分卷 · 自解压包</td>
+    </tr>
+  </tbody>
+</table>
+<p style="font-size:13.5px;color:var(--ink2)">注意第四条被你写成了「兼容全部协议」，但从实际用途看，你要的是<b>「对方能打开」</b>，不是「我能创建每一种格式」。这两件事方向相反：格式越多、越新，对方的工具越可能打不开。这个判断直接决定了功能优先级。</p>
+
+<h2>2 · 功能四层模型</h2>
+
+<h3>L0 生死线 — 缺了就不是压缩软件</h3>
+<p>格式识别与解压、压缩创建、拖放、进度、错误提示可读、不损坏文件。<b>Squash v0.1 已全部具备。</b></p>
+
+<h3>L1 高频刚需 — 决定每天用起来爽不爽</h3>
+<table>
+  <thead><tr><th>功能</th><th>为什么是刚需</th><th>Squash 现状</th></tr></thead>
+  <tbody>
+    <tr><td>Finder 右键菜单</td><td>99% 的操作起点在 Finder，不在 App 窗口</td><td class="part">缺（P0）</td></tr>
+    <tr><td>Quick Look 预览压缩包</td><td>不解压就知道里面是什么，省一次解压+删除</td><td class="part">缺（P1）</td></tr>
+    <tr><td>默认解压位置正确</td><td>解到哪、要不要套一层同名文件夹，是最高频的抱怨点</td><td class="yes">已做</td></tr>
+    <tr><td>记住上次设置</td><td>每次都重选格式=每天都在重复劳动</td><td class="part">缺（P0）</td></tr>
+    <tr><td>中文文件名编码处理</td><td>国内 Windows 互传必踩，见第 4 节实测</td><td class="part">缺（P0）</td></tr>
+    <tr><td>哈希校验</td><td>确认收到的包没坏、没被改，安全场景刚需</td><td class="part">缺（P1）</td></tr>
+  </tbody>
+</table>
+
+<h3>L2 场景加分 — 决定什么时候非它不可</h3>
+<ul>
+  <li><b>分卷</b>：邮件 25MB 上限、企业微信/微信文件限制，大包必须切开。引擎支持 <code>-v</code>，只是没接 UI。</li>
+  <li><b>镜像与固件直接提取</b>：dmg / iso / vmdk / qcow2 / apfs / ntfs / ext4 / squashfs —— 7-Zip 26 已内建（见第 3 节），做成 UI 就是别人没有的东西。</li>
+  <li><b>可执行文件结构浏览</b>：MachO / PE / ELF / MSI / NSIS / DMG 都能直接列内部结构，样本初筛不用装逆向工具。</li>
+  <li><b>发送前兼容性预警</b>：告诉用户「你选的 AES-256 Zip，对方 Windows 双击打不开，需要 7-Zip」。</li>
+  <li><b>自解压包</b>（<code>-sfx</code>）：给完全不懂技术的接收方，双击即解，不用装任何软件。</li>
+  <li><b>批处理 / 命令行</b>：把常用组合存成一键动作。</li>
+</ul>
+
+<h3>L3 明确不做 — 功能蔓延陷阱</h3>
+<table>
+  <thead><tr><th>功能</th><th>为什么不做</th></tr></thead>
+  <tbody>
+    <tr><td>压缩包内编辑器（不解压直接改）</td><td>BetterZip 的护城河，实现成本极高（需完整读写各格式中央目录），你的场景不需要</td></tr>
+    <tr><td>RAR 创建</td><td>专有授权，开源工具一律做不到，别承诺</td></tr>
+    <tr><td>密码破解 / 字典攻击</td><td>工具定位一旦沾这个，分发和信任都完了</td></tr>
+    <tr><td>云盘上传、在线分享</td><td>违背「文件不出本机」的隐私定位</td></tr>
+    <tr><td>支持全部 200+ 格式的 UI 选择器</td><td>创建格式越多越难选，7z + Zip + tar.gz 覆盖 99% 场景</td></tr>
+  </tbody>
+</table>
+
+<h2>3 · 引擎能力盘点（一手实测，非厂商宣传）</h2>
+<p>直接在 <code>7zz i</code> 上读出来的真实能力边界，这决定了「能做到什么」的上限：</p>
+
+<div class="kv"><b>可创建格式</b><span>7 种：7z · zip · tar · gzip · bzip2 · xz · wim（外加 Hash 校验文件）</span></div>
+<div class="kv"><b>可读取格式</b><span class="num">50+ 种，含分卷 .001、自解压、Office/ePub/JAR/APK</span></div>
+<div class="kv"><b>加密编解码器</b><span>7zAES（AES-256）、AES256CBC（用于 WinZip AES）</span></div>
+<div class="kv"><b>压缩过滤器</b><span>BCJ / BCJ2（x86）、ARM64、RISCV、Delta、LZMA2、PPMd、Deflate64</span></div>
+<div class="kv"><b>命令行开关</b><span>分卷 <code>-v</code> · 自解压 <code>-sfx</code> · 密码 <code>-p</code> · 加密头 <code>-mhe</code> · 字符集 <code>-mcp</code> · 覆盖策略 · 压缩后删源 · 保留权限/符号链接 · 包内过滤 · 增量更新</span></div>
+
+<h3>被严重低估的一点：它不只能开压缩包</h3>
+<p>同一个引擎能直接展开下列<b>非压缩包</b>结构，全部无需额外工具：</p>
+<p>
+<span class="pill">DMG</span><span class="pill">ISO / UDF</span><span class="pill">APFS</span><span class="pill">HFS+</span>
+<span class="pill">NTFS</span><span class="pill">ext2/3/4</span><span class="pill">FAT</span><span class="pill">VMDK</span>
+<span class="pill">VHD / VHDX</span><span class="pill">VDI</span><span class="pill">QCOW2</span><span class="pill">SquashFS</span>
+<span class="pill">CramFS</span><span class="pill">MBR / GPT</span><span class="pill">MachO</span><span class="pill">PE (exe/dll/sys)</span>
+<span class="pill">ELF</span><span class="pill">MSI / DOC / XLS</span><span class="pill">NSIS 安装包</span><span class="pill">XAR / pkg</span>
+<span class="pill">CHM</span><span class="pill">RPM</span><span class="pill">DEB</span><span class="pill">UEFI 固件</span>
+</p>
+<p style="font-size:13.5px;color:var(--ink2)">对安全运营场景（取证、样本初筛、固件比对）这是白送的能力。目前<b>没有任何一个 Mac 压缩软件把这个做成可点的界面</b>——它们只当成「支持格式」写进宣传页。</p>
+
+<h2>4 · 实测：三个没人管的真痛点</h2>
+
+<div class="card warn">
+  <h3 style="margin-top:0">痛点一：中文文件名乱码（已实测确认）</h3>
+  <p>模拟 Windows 上常见的情形：ZIP 内文件名用 <b>GBK</b> 编码、未设 UTF-8 标志位。用引擎解压的结果：</p>
+  <ul>
+    <li>文件名列表直接变成 <code>뿐...ľ...txt</code> 这类乱码字符</li>
+    <li>落盘的文件名同样是乱码，内容本身没坏</li>
+    <li>加 <code>-mcp=936</code> <b>无效</b>——该参数只管压缩时的代码页，不管解压识别</li>
+  </ul>
+  <p>结论：<b>这不是配置问题，是引擎在 macOS 上不做 GBK 猜测。</b>要修必须自己在应用层做：解压后检测非法 UTF-8 序列 → 按 GBK 重解码 → 重命名。这是国内场景下最高价值的一个功能，也是 Keka / MacPacker / BetterZip 都没有明确解决的问题。</p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">痛点二：加了密的包，对方打不开</h3>
+  <p>三种加密选择，接收方门槛完全不同——大多数工具不给任何提示，发出去才发现对方开不了：</p>
+  <table style="margin-bottom:0">
+    <thead><tr><th>你选的</th><th>强度</th><th>Windows 接收方</th><th>macOS 接收方</th></tr></thead>
+    <tbody>
+      <tr><td>7z + AES-256</td><td class="yes">强</td><td>需装 7-Zip / WinRAR</td><td>需装 7-Zip 类工具，系统归档打不开</td></tr>
+      <tr><td>Zip + AES-256</td><td class="yes">强</td><td>需装 7-Zip / WinRAR，资源管理器打不开</td><td>同上</td></tr>
+      <tr><td>Zip + ZipCrypto</td><td class="no">弱（可被明文攻击）</td><td>资源管理器原生可开</td><td>系统归档原生可开</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-bottom:0;font-size:13.5px;color:var(--ink2)">产品化建议：在加密码的同时显示一行「对方需要什么才能打开」，并把强度明显更低的 ZipCrypto 从选项里彻底移除。</p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">痛点三：发出去的文件里全是垃圾</h3>
+  <p><code>__MACOSX/</code>、<code>.DS_Store</code>、<code>._*</code> 资源分叉文件，Windows 用户打开第一反应是「这什么病毒」。Squash v0.1 已在压缩时默认剔除，这一点比 Keka 默认行为好（Keka 需要手动去设置里勾）。</p>
+</div>
+
+<h2>5 · 竞品功能矩阵</h2>
+<table>
+  <thead>
+    <tr>
+      <th>功能</th>
+      <th class="c">Squash v0.1</th>
+      <th class="c">Keka</th>
+      <th class="c">MacPacker</th>
+      <th class="c">PeaZip</th>
+      <th class="c">BetterZip 6</th>
+      <th class="c">系统归档</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>许可 / 价格</td><td class="c">自研</td><td class="c">GPLv3 免费</td><td class="c">GPL-3.0 免费</td><td class="c">LGPL 免费</td><td class="c">约 $35</td><td class="c">系统自带</td></tr>
+    <tr><td>解压格式数</td><td class="c">50+</td><td class="c">33</td><td class="c">41</td><td class="c">200+</td><td class="c">30+</td><td class="c">ZIP 等少数</td></tr>
+    <tr><td>创建格式数</td><td class="c">3（+可扩）</td><td class="c">14</td><td class="c">ZIP 为主</td><td class="c">10+</td><td class="c">13</td><td class="c">仅 ZIP</td></tr>
+    <tr><td>7z AES-256</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td></tr>
+    <tr><td>Zip AES-256</td><td class="c yes">✓</td><td class="c no">✗ 仅 ZipCrypto</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td></tr>
+    <tr><td>加密文件名</td><td class="c yes">✓</td><td class="c part">部分</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td></tr>
+    <tr><td>分卷</td><td class="c part">引擎支持，未接 UI</td><td class="c yes">✓</td><td class="c part">部分</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td></tr>
+    <tr><td>哈希校验</td><td class="c part">引擎支持，未接 UI</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td></tr>
+    <tr><td>不解压预览</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓ 强项</td><td class="c part">部分</td><td class="c yes">✓</td><td class="c no">—</td></tr>
+    <tr><td>原地改包内文件</td><td class="c no">—</td><td class="c no">—</td><td class="c part">仅 ZIP</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td></tr>
+    <tr><td>Finder 右键集成</td><td class="c no">待做</td><td class="c part">需 helper</td><td class="c yes">✓</td><td class="c no">—</td><td class="c yes">✓ 强项</td><td class="c yes">✓</td></tr>
+    <tr><td>Quick Look 预览</td><td class="c no">待做</td><td class="c part">有扩展</td><td class="c yes">✓</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>命令行 / 自动化</td><td class="c part">引擎级可用</td><td class="c no">—</td><td class="c no">—</td><td class="c part">批处理脚本</td><td class="c yes">✓ CLI+AS+快捷指令</td><td class="c no">—</td></tr>
+    <tr><td>密码管理器</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td></tr>
+    <tr><td>镜像/固件提取</td><td class="c part">引擎已具备</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td><td class="c part">ISO/DMG 部分</td><td class="c no">—</td></tr>
+    <tr><td>中文文件名修复</td><td class="c no">待做</td><td class="c no">未见</td><td class="c no">未见</td><td class="c no">未见</td><td class="c no">未见</td><td class="c no">—</td></tr>
+    <tr><td>原生 Mac 观感</td><td class="c yes">✓ AppKit</td><td class="c part">老派</td><td class="c yes">✓ SwiftUI</td><td class="c no">Qt，非原生</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>无遥测/无账号</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c part">—</td><td class="c yes">✓</td></tr>
+  </tbody>
+</table>
+<p style="font-size:12.5px;color:var(--ink2)">表中「—」表示该产品不提供。「部分」表示能力存在但需要额外配置、需外部工具或覆盖不完整。数据来源见页脚。</p>
+
+<h2>6 · Squash 差距与优先级</h2>
+
+<h3><span class="tag p0">P0</span> 不做就等于半成品（约 1 天内可完成）</h3>
+<table>
+  <thead><tr><th>功能</th><th>做法</th><th>价值</th></tr></thead>
+  <tbody>
+    <tr><td>Finder 右键服务</td><td>写一个 Services 或 FinderSync 扩展，暴露「用 Squash 压缩 / 解压到此处」</td><td>把操作入口搬到真正用的地方，这比任何 UI 美化都值钱</td></tr>
+    <tr><td>记住上次设置</td><td>UserDefaults 存格式、级别、是否加密文件名</td><td>消除重复劳动</td></tr>
+    <tr><td>中文文件名修复</td><td>解压后扫描非法 UTF-8 文件名 → 按 GBK 重解码 → 重命名；提供开关</td><td>国内场景最高价值，竞品皆无</td></tr>
+    <tr><td>Dock 图标接文件</td><td>Info.plist 声明 CFBundleDocumentTypes + 拖到 Dock 处理</td><td>另一种高频入口</td></tr>
+  </tbody>
+</table>
+
+<h3><span class="tag p1">P1</span> 形成口碑差异（约 2–3 天）</h3>
+<table>
+  <thead><tr><th>功能</th><th>做法</th></tr></thead>
+  <tbody>
+    <tr><td>分卷压缩 / 自动合并</td><td>接 <code>-v</code> 参数，UI 给 10M / 25M / 100M / 自定义</td></tr>
+    <tr><td>哈希校验</td><td>压缩后生成 SHA-256 并显示，可复制；支持核验对方给的哈希</td></tr>
+    <tr><td>发送前兼容性提示</td><td>按「接收方是 Windows 小白 / 技术人员 / Mac」给出格式与加密建议</td></tr>
+    <tr><td>Quick Look 扩展</td><td>独立 extension，空间键预览包内文件列表</td></tr>
+  </tbody>
+</table>
+
+<h3><span class="tag p2">P2</span> 别人没有的东西（有余力再做）</h3>
+<table>
+  <thead><tr><th>功能</th><th>做法</th></tr></thead>
+  <tbody>
+    <tr><td>镜像 / 固件浏览</td><td>复用引擎，把 dmg/iso/vmdk/qcow2/固件包当成「压缩包」列出并选择性提取</td></tr>
+    <tr><td>可执行文件结构查看</td><td>MachO / PE / MSI / NSIS 内部条目列表，样本初筛用</td></tr>
+    <tr><td>自解压包</td><td><code>-sfx</code>，给完全不懂技术的接收方</td></tr>
+    <tr><td>一键动作 / 命令行</td><td>「压缩并发邮件」「压成 25M 分卷」这类组合动作</td></tr>
+  </tbody>
+</table>
+
+<h2>7 · 定位建议</h2>
+<p class="lead">不要做「又一个压缩软件」。Keka 免费、PeaZip 200+ 格式、BetterZip 功能完备、MacPacker 预览体验极好——在这个赛道里比功能多，赢不了。</p>
+<p>真正没人占的位置是：<b>「把东西安全、完整、对方一定能打开地送出去」</b>。围绕这一句，功能取舍立刻清楚：</p>
+<ul>
+  <li>加密默认用最强的（7z AES-256 + 加密文件名），并主动告知接收方门槛</li>
+  <li>中文文件名、<code>__MACOSX</code>、路径穿越这些「发出去才发现的坑」全部提前处理掉</li>
+  <li>大文件自动建议分卷，而不是让用户自己算 25MB 该切几份</li>
+  <li>附带哈希，让接收方能自证文件没被改动</li>
+  <li>顺手把镜像/固件提取做出来——安全场景的免费增值点</li>
+</ul>
+<p style="color:var(--ink2);font-size:13.5px">按这个定位，Squash 不需要跟 Keka 比格式数量，也不需要跟 BetterZip 比编辑能力。它只需要在「交付」这一个动作上做到没有对手。</p>
+
+<footer>
+  <b>数据来源与验证方式</b><br>
+  · 引擎能力：本机对 <code>7zz 26.05 (arm64, 2026-10-21)</code> 执行 <code>7zz i</code> 的真实输出，非文档摘抄<br>
+  · 中文乱码：构造 GBK 编码文件名且未设 UTF-8 标志的 ZIP，实测解压落盘结果为乱码，<code>-mcp=936</code> 无效<br>
+  · Keka 1.6.8：官网功能页原文（明确写 "AES-256 for 7z, Zip 2.0 legacy for Zip"）<br>
+  · PeaZip / BetterZip / MacPacker：各自官方功能页<br>
+  · 矩阵中标注「未见」的项目，是未在官方文档中找到对应说明，不代表一定不存在<br>
+  · 本页为调研结论，未做竞品逐项功能实测
+</footer>
+
+</div>
+</body>
+</html>

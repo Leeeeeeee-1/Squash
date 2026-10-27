@@ -1,0 +1,29 @@
+# 构建产物
+build/
+*.app
+*.app.zip
+
+# 编译中间产物
+*.o
+*.dSYM/
+.swiftpm/
+Package.resolved
+
+# 测试探针的编译产物（源码保留）
+test/Probe
+
+# macOS
+.DS_Store
+._*
+
+# 编辑器
+.vscode/
+.idea/
+*.xcodeproj/
+*.xcworkspace/
+
+# 本地临时
+*.log
+
+# 7-Zip 引擎（构建时从 vendor/7z-mac.tar.xz 解出，不入库）
+vendor/7zmac/

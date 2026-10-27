@@ -1,0 +1,40 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    # arm64 runner：内置的 7zz 引擎只有 arm64 版本
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 显示工具链
+        run: |
+          sw_vers
+          xcrun --show-sdk-path
+          swiftc --version
+
+      - name: 构建
+        run: ./build.sh
+
+      - name: 校验 Info.plist
+        run: plutil -lint build/Squash.app/Contents/Info.plist
+
+      - name: 无头自测
+        run: ./build/Squash.app/Contents/MacOS/Squash --selftest
+
+      - name: 打包
+        run: |
+          cd build
+          ditto -c -k --sequesterRsrc --keepParent Squash.app Squash.app.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Squash.app
+          path: build/Squash.app.zip
+          retention-days: 14

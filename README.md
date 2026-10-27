@@ -13,6 +13,8 @@
 [![Telemetry](https://img.shields.io/badge/telemetry-none-brightgreen)](#)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
+[GitHub](https://github.com/Leeeeeeee-1/Squash) ｜ [Gitee（国内镜像）](https://gitee.com/lees-hub/squash)
+
 <img src="docs/screenshots/01-overview.png" width="640" alt="Squash 主界面">
 
 </div>
@@ -94,8 +96,9 @@ xattr -dr com.apple.quarantine /Applications/Squash.app
 需要 Xcode Command Line Tools，**不需要装 Xcode.app**：
 
 ```bash
-git clone https://github.com/Leeeeeeee-1/Squash.git
-cd Squash
+# 国内走 Gitee，海外走 GitHub，两边代码一致
+git clone https://gitee.com/lees-hub/squash.git
+cd squash
 ./build.sh                  # 产物在 build/Squash.app
 open build/Squash.app
 ```

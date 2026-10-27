@@ -94,7 +94,7 @@ xattr -dr com.apple.quarantine /Applications/Squash.app
 需要 Xcode Command Line Tools，**不需要装 Xcode.app**：
 
 ```bash
-git clone https://github.com/Leeeeeee-1/Squash.git
+git clone https://github.com/Leeeeeeee-1/Squash.git
 cd Squash
 ./build.sh                  # 产物在 build/Squash.app
 open build/Squash.app

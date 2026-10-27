@@ -18,8 +18,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>CFBundleIdentifier</key>        <string>com.lee.squash</string>
     <key>CFBundleExecutable</key>        <string>Squash</string>
     <key>CFBundlePackageType</key>       <string>APPL</string>
-    <key>CFBundleShortVersionString</key><string>1.0.0</string>
-    <key>CFBundleVersion</key>           <string>1</string>
+    <key>CFBundleShortVersionString</key><string>1.0.1</string>
+    <key>CFBundleVersion</key>           <string>2</string>
     <key>LSMinimumSystemVersion</key>    <string>13.0</string>
     <key>NSHighResolutionCapable</key>   <true/>
     <key>LSApplicationCategoryType</key> <string>public.app-category.utilities</string>
@@ -27,7 +27,39 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>CFBundleDocumentTypes</key>
     <array>
         <dict>
-            <key>CFBundleTypeName</key><string>Archive or File</string>
+            <key>CFBundleTypeName</key><string>压缩归档</string>
+            <key>CFBundleTypeRole</key><string>Viewer</string>
+            <key>LSHandlerRank</key><string>Owner</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.zip-archive</string>
+                <string>org.7-zip.7-zip-archive</string>
+                <string>com.rarlab.rar-archive</string>
+                <string>public.tar-archive</string>
+                <string>org.gnu.gnu-zip-archive</string>
+                <string>org.gnu.gnu-zip-tar-archive</string>
+                <string>public.bzip2-archive</string>
+                <string>public.tar-bzip2-archive</string>
+                <string>org.tukaani.xz-archive</string>
+                <string>org.tukaani.tar-xz-archive</string>
+            </array>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>zip</string>
+                <string>7z</string>
+                <string>rar</string>
+                <string>tar</string>
+                <string>gz</string>
+                <string>tgz</string>
+                <string>bz2</string>
+                <string>tbz</string>
+                <string>tbz2</string>
+                <string>xz</string>
+                <string>txz</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key><string>任意文件（仅出现在“打开方式”里）</string>
             <key>CFBundleTypeRole</key><string>Viewer</string>
             <key>LSHandlerRank</key><string>Alternate</string>
             <key>LSItemContentTypes</key>
@@ -35,7 +67,6 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
                 <string>public.item</string>
                 <string>public.data</string>
                 <string>public.folder</string>
-                <string>public.zip-archive</string>
             </array>
         </dict>
     </array>
